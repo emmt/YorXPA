@@ -113,3 +113,49 @@ func xpa_list(nil)
         return lst;
     }
 }
+
+func xpa_array(ans, i, type, ..)
+/* DOCUMENT arr = xpa_array(ans, i, type, dims...);
+
+     yields an array whose elements have type `type` and whose dimensions are
+     `dims` from the `i`-th data buffer stored in `ans`.
+
+   SEE ALSO xpa_get, xpa_list.
+ */
+{
+    /* Build dimension list. */
+    dims = [0];
+    err = 0n;
+    while (more_args()) {
+        local arg;
+        eq_nocopy, arg, next_arg();
+        if (is_integer(arg)) {
+            if (is_scalar(arg)) {
+                grow, dims, arg;
+            } else if (is_vector(arg) && (n = numberof(arg)) == arg(1) + 1) {
+                if (n >= 2) {
+                    grow, dims, arg(2:0);
+                }
+            } else {
+                err = 1n;
+                break;
+            }
+        } else if (! is_void(arg)) {
+            err = 1n;
+            break;
+        }
+    }
+    if (! err) {
+        n = numberof(dims);
+        if (n > 1) {
+            dims(1) = n - 1;
+            err = (min(dims) < 1);
+        }
+    }
+    if (err) {
+        error, "invalid dimension(s)";
+    }
+
+    /* Return array. */
+    return ans((is_void(i) ? 1 : i), array(type, dims));
+}
