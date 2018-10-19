@@ -66,6 +66,15 @@ push_string(const char* str, long len)
     ypush_q(NULL)[0] = cpy;
 }
 
+static long index_of_nmax = -1;
+
+static void initialize_indices()
+{
+#define INIT(s) if (index_of_##s == -1) index_of_##s = yfind_global(#s, 0)
+    INIT(nmax);
+#undef INIT
+}
+
 /*---------------------------------------------------------------------------*/
 /* PERSISTENT XPA CONNECTION */
 
@@ -200,8 +209,9 @@ print_xpadata(void* addr)
     int messages = get_messages(obj);
 #define ARG(n) (n), ((n) < 2 ? "" : "s")
     sprintf(buffer,
-            "XPAData (%d replie%s, %d buffer%s, %d message%s, %d error%s)",
-            ARG(replies), ARG(buffers), ARG(messages), ARG(errors));
+            "XPAData (%d %s, %d buffer%s, %d message%s, %d error%s)",
+            replies, (replies < 2 ? "reply" : "replies"),
+            ARG(buffers), ARG(messages), ARG(errors));
 #undef ARG
     y_print(buffer, 1);
 }
@@ -427,28 +437,58 @@ void Y_xpaget(int argc)
 {
     char* apt = NULL;
     char* cmd = NULL;
-    int typeid, iarg;
+    int typeid, iarg, nmax = 1, npos = 0;
 
     /* Parse arguments. */
-    if (argc < 1 || argc > 2) {
+    for (iarg = argc - 1; iarg >= 0; --iarg) {
+        long index = yarg_key(iarg);
+        if (index == -1) {
+            /* Positional argument. */
+            ++npos;
+            if (npos == 1) {
+                /* Get access point. */
+                if (! IS_SCALAR_STRING(iarg)) {
+                    y_error("access point must be a string");
+                }
+                apt = ygets_q(iarg);
+            } else if (npos == 2) {
+                /* Get command. */
+                typeid = yarg_typeid(iarg);
+                if (IS_STRING(typeid) && yarg_rank(iarg) == 0) {
+                    cmd = ygets_q(iarg);
+                } else if (! IS_VOID(typeid)) {
+                    y_error("command must be empty or a string");
+                }
+            } else {
+                goto args;
+            }
+        } else {
+            /* Keyword argument. */
+            --iarg;
+            if (index_of_nmax < 0) {
+                initialize_indices();
+            }
+            if (index == index_of_nmax) {
+                typeid = yarg_typeid(iarg);
+                if (IS_INTEGER(typeid) && yarg_rank(iarg) == 0) {
+                    nmax = ygets_l(iarg);
+                    if (nmax == -1) {
+                        nmax = NMAX;
+                    }
+                    if (nmax < 0 || nmax > NMAX) {
+                        y_error("out of range value for keyword `nmax`");
+                    }
+                } else if (! IS_VOID(typeid)) {
+                    y_error("keyword `nmax` takes an integer value");
+                }
+            } else {
+                y_error("unknown keyword");
+            }
+        }
+    }
+    if (npos < 1) {
+    args:
         y_error("expecting 1 or 2 arguments");
-    }
-    iarg = argc;
-    if (--iarg >= 0) {
-        /* Get access point. */
-        if (! IS_SCALAR_STRING(iarg)) {
-            y_error("access point must be a string");
-        }
-        apt = ygets_q(iarg);
-    }
-    if (--iarg >= 0) {
-        /* Get command. */
-        typeid = yarg_typeid(iarg);
-        if (IS_STRING(typeid) && yarg_rank(iarg) == 0) {
-            cmd = ygets_q(iarg);
-        } else if (! IS_VOID(typeid)) {
-            y_error("command must be empty or a string");
-        }
     }
 
     /* Evaluate the XPA get command. */
@@ -456,7 +496,7 @@ void Y_xpaget(int argc)
         connect();
     }
     clear_static_arrays();
-    replies = XPAGet(client, apt, cmd, NULL, bufs, lens, srvs, msgs, NMAX);
+    replies = XPAGet(client, apt, cmd, NULL, bufs, lens, srvs, msgs, nmax);
     push_xpadata();
 }
 
@@ -467,42 +507,71 @@ void Y_xpaset(int argc)
     char* buf = NULL;
     size_t len = 0;
     long ntot;
-    int typeid, iarg;
+    int typeid, iarg, nmax = 1, npos = 0;
 
     /* Parse arguments. */
-    if (argc < 1 || argc > 3) {
+    for (iarg = argc - 1; iarg >= 0; --iarg) {
+        long index = yarg_key(iarg);
+        if (index == -1) {
+            /* Positional argument. */
+            ++npos;
+            if (npos == 1) {
+                /* Get access point. */
+                if (! IS_SCALAR_STRING(iarg)) {
+                    y_error("access point must be a string");
+                }
+                apt = ygets_q(iarg);
+            } else if (npos == 2) {
+                /* Get command. */
+                typeid = yarg_typeid(iarg);
+                if (IS_STRING(typeid) && yarg_rank(iarg) == 0) {
+                    cmd = ygets_q(iarg);
+                } else if (! IS_VOID(typeid)) {
+                    y_error("command must be empty or a string");
+                }
+            } else if (npos == 3) {
+                /* Get data. */
+                buf = ygeta_any(iarg, &ntot, NULL, &typeid);
+                switch (typeid) {
+                case Y_CHAR: len = ntot*sizeof(char); break;
+                case Y_SHORT: len = ntot*sizeof(short); break;
+                case Y_INT: len = ntot*sizeof(int); break;
+                case Y_LONG: len = ntot*sizeof(long); break;
+                case Y_FLOAT: len = ntot*sizeof(float); break;
+                case Y_DOUBLE: len = ntot*sizeof(double); break;
+                case Y_COMPLEX: len = 2*ntot*sizeof(double); break;
+                default: y_error("invalid array type");
+                }
+            } else {
+                goto args;
+            }
+        } else {
+            /* Keyword argument. */
+            --iarg;
+            if (index_of_nmax < 0) {
+                initialize_indices();
+            }
+            if (index == index_of_nmax) {
+                typeid = yarg_typeid(iarg);
+                if (IS_INTEGER(typeid) && yarg_rank(iarg) == 0) {
+                    nmax = ygets_l(iarg);
+                    if (nmax == -1) {
+                        nmax = NMAX;
+                    }
+                    if (nmax < 0 || nmax > NMAX) {
+                        y_error("out of range value for keyword `nmax`");
+                    }
+                } else if (! IS_VOID(typeid)) {
+                    y_error("keyword `nmax` takes an integer value");
+                }
+            } else {
+                y_error("unknown keyword");
+            }
+        }
+    }
+    if (npos < 1) {
+    args:
         y_error("expecting 1, 2 or 3 arguments");
-    }
-    iarg = argc;
-    if (--iarg >= 0) {
-        /* Get access point. */
-        if (! IS_SCALAR_STRING(iarg)) {
-            y_error("access point must be a string");
-        }
-        apt = ygets_q(iarg);
-    }
-    if (--iarg >= 0) {
-        /* Get command. */
-        typeid = yarg_typeid(iarg);
-        if (IS_STRING(typeid) && yarg_rank(iarg) == 0) {
-            cmd = ygets_q(iarg);
-        } else if (! IS_VOID(typeid)) {
-            y_error("command must be empty or a string");
-        }
-    }
-    if (--iarg >= 0) {
-        /* Get data. */
-        buf = ygeta_any(iarg, &ntot, NULL, &typeid);
-        switch (typeid) {
-        case Y_CHAR: len = ntot*sizeof(char); break;
-        case Y_SHORT: len = ntot*sizeof(short); break;
-        case Y_INT: len = ntot*sizeof(int); break;
-        case Y_LONG: len = ntot*sizeof(long); break;
-        case Y_FLOAT: len = ntot*sizeof(float); break;
-        case Y_DOUBLE: len = ntot*sizeof(double); break;
-        case Y_COMPLEX: len = 2*ntot*sizeof(double); break;
-        default: y_error("invalid array type");
-        }
     }
 
     /* Evaluate the XPA set command. */
@@ -510,7 +579,7 @@ void Y_xpaset(int argc)
         connect();
     }
     clear_static_arrays();
-    replies = XPASet(client, apt, cmd, NULL, buf, len, srvs, msgs, NMAX);
+    replies = XPASet(client, apt, cmd, NULL, buf, len, srvs, msgs, nmax);
     push_xpadata();
 }
 

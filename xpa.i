@@ -16,27 +16,33 @@ if (is_func(plug_in)) plug_in, "yor_xpa";
 extern xpaget;
 /* DOCUMENT ans = xpaget(apt [, cmd]);
 
-     This function performs an XPA get command.  APT is the XPA access point
-     to identify the destination server(s).  CMD is an optional textual
-     command (a string or nil).
+     This function performs an XPA get command.  Argument `apt` is the XPA
+     access point to identify the destination server(s).  Argument `cmd` is an
+     optional textual command (a string or nil).
 
-     The returned object collect the answers of the recipients and can be
+     Keyword `nmax` may be used to specify the maximum number of recipients.
+     By default, `nmax=1`.  Specifying `nmax=-1` will use the maximum possible
+     number of recipients.
+
+     The returned object collects the answers of the recipients and can be
      indexed as follows to retrieve the contents of the received answers:
 
        ans()      yields the number of replies;
-       ans(i)     yields the message of i-th reply;
-       ans(i,)    yields the data size of the i-th reply;
-       ans(i,arr) copy data from i-th reply into array ARR (sizes must match);
-       ans(i,0)   yields 0 if there is no message for i-th reply, 1 if it is a
-                  normal message, 2 if it is an error message;
-       ans(i,1)   yields the message of the i-th reply;
-       ans(i,2)   yields the server name of the i-th reply;
-       ans(i,3)   yields the data of the i-th reply as an array of bytes (or
-                  nil if there are no data);
-       ans(i,4)   yields the data of the i-th reply as a string;
+       ans(i)     yields the message of `i`-th reply;
+       ans(i,)    yields the data size of the `i`-th reply;
+       ans(i,arr) copies data from `i`-th reply into array `arr` (sizes must
+                  match) and yields `arr`;
+       ans(i,0)   yields `0` if there is no message for `i`-th reply, `1` if
+                  it is a normal message, `2` if it is an error message;
 
-     If index i is less or equal zero, Yorick indexing rules apply (i=0 refers
-     to the last entry, etc.).
+       ans(i,1)   yields the message of the `i`-th reply;
+       ans(i,2)   yields the server name of the `i`-th reply;
+       ans(i,3)   yields the data of the `i`-th reply as an array of bytes
+                  (or nil if there are no data);
+       ans(i,4)   yields the data of the `i`-th reply as a string.
+
+     If index `i` is less or equal zero, Yorick indexing rules apply (`i=0`
+     refers to the last entry, etc.).
 
      The returned object also have the following members:
 
@@ -51,24 +57,29 @@ extern xpaget;
 extern xpaset;
 /* DOCUMENT ans = xpaset(apt [, cmd [, arr]]);
 
-     This function performs an XPA set command.  APT is the XPA access point
-     to identify the destination server(s).  CMD is an optional textual
-     command (a string or nil).  ARR is an optional data to send to the
-     recipients (a numerical array or nil).
+     This function performs an XPA set command.  Argument `apt` is the XPA
+     access point to identify the destination server(s).  Argument `cmd` is an
+     optional textual command (a string or nil).  Argument `arr` is an optional
+     data to send to the recipients (a numerical array or nil).
 
      The returned object collects the answers ot the recipients and has
      similar semantic as the object returned by xpaget.
 
-   SEE ALSO xpaget.
+     Keyword `nmax` may be used to specify the maximum number of recipients.
+     By default, `nmax=1`.  Specifying `nmax=-1` will use the maximum possible
+     number of recipients.
+
+
+   SEE ALSO xpaget, xpalist.
  */
 
 func xpalist(nil)
 /* DOCUMENT lst = xpalist();
          or xpalist;
 
-     This function retrieves a list of the current XPA servers.
-     If called as a function, a list of strings (or nil) is returned; otherwise
-     the list of servers is printed.
+     This function retrieves a list of the current XPA servers.  If called as a
+     function, a list of strings (or nil if there are no servers) is returned;
+     otherwise the list of servers is printed.
 
    SEE ALSO xpaget.
  */
