@@ -159,3 +159,79 @@ func xpa_array(ans, i, type, ..)
     /* Return array. */
     return ans((is_void(i) ? 1 : i), array(type, dims));
 }
+
+func xpa_get_text(apt, cmd, chomp=, multi=)
+/* DOCUMENT txt = xpa_get_text(apt, cmd);
+
+     sends an XPA get request for access point `apt` and command `cmd` and
+     yields the data resulting from this request in a textual form.  If
+     the answer has some error message, an error is thrown.
+
+     Keyword `chomp` may be set true to discard a single trailing newline if
+     any.  If keyword `multi` is set true, multiple lines are returned in the
+     form of an array of strings.
+
+   SEE ALSO: xpa_get.
+ */
+{
+    ans = xpa_get(apt, cmd);
+    xpa_check, ans;
+    if (multi) {
+        buf = ans(1,3);
+        j = where(buf == '\n');
+        if (is_array(j)) {
+            buf(j) = '\0';
+        }
+        return strchar(buf);
+    } else if (chomp) {
+        buf = ans(1,3);
+        if (buf(0) == '\n') {
+            buf(0) = '\0';
+        }
+        return strchar(buf);
+    } else {
+        return ans(1,4);
+    }
+}
+
+func xpa_check(ans, onlyfirst=)
+/* DOCUMENT xpa_check, ans;
+         or msg = xpa_check(ans);
+
+     asserts that XPA answer `ans` does not contain any errors.  If there are
+     any error messages in `ans` and if called as a subroutine, `xpa_check`
+     throws an error.  If called as a function, error message(s) are returned
+     as a string to the caller (nothing is returned if there are no errors).
+
+   SEE ALSO: xpa_get, xpa_set, errs2caller.
+*/
+{
+    errors = ans.errors;
+    if (errors > 0) {
+        local msg;
+        if (onlyfirst && errors > 1) {
+            /* Will just print the first one. */
+            errors = 1;
+        }
+        replies = ans.replies;
+        for (i = 1; i <= replies; ++i) {
+            if (ans(i,0) == 2) {
+                str = strpart(ans(i,1), 11:);
+                if (is_void(msg)) {
+                    eq_nocopy, msg, str;
+                } else {
+                    msg += "; " + str;
+                }
+                if (--errors <= 0) {
+                    break;
+                }
+            }
+        }
+        if (am_subroutine()) {
+            error, msg;
+        } else {
+            return msg;
+        }
+    }
+}
+errs2caller, xpa_check;
