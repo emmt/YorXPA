@@ -22,10 +22,10 @@ from an XPA server (or several servers), call:
 ans = xpa_get(apt [, cmd]);
 ```
 
-where `apt` is the XPA access point to identify the destination server(s) and
-`cmd` is an optional textual command (a string or nil).  The returned object
-collects the answers of the recipients and can be indexed as follows to
-retrieve the contents of the received answers:
+where `apt` is a string to identify the XPA access point(s) of the destination
+server(s) and `cmd` is an optional textual command (a string or nil).  The
+returned object collects the answers of the recipients and can be indexed as
+follows to retrieve the contents of the received answers:
 
 - `ans()` yields the number of replies;
 
@@ -49,7 +49,7 @@ retrieve the contents of the received answers:
 - `ans(i,4)` yields the data of the `i`-th reply as a string.
 
 If index `i` is less or equal zero, Yorick indexing rules apply (`i=0` refers
-to the last entry, etc.).  The returned object also have the following members:
+to the last reply, etc.).  The returned object also have the following members:
 
 - `ans.replies` yields the number of replies;
 - `ans.buffers` yields the number of data buffers in the replies;
@@ -67,7 +67,7 @@ to an XPA server (or several servers), call:
 ans = xpa_set(apt [, cmd [, arr]]);
 ```
 
-where `apt` is the XPA access point to identify the destination server(s),
+where `apt` identifies the XPA access point(s) of the destination server(s),
 `cmd` is an optional textual command (a string or nil) and `arr` is an optional
 data to send to the recipients (a numerical array or nil).  The returned object
 collects the answers ot the recipients and has similar semantic as the object

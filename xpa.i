@@ -16,9 +16,9 @@ if (is_func(plug_in)) plug_in, "yor_xpa";
 extern xpa_get;
 /* DOCUMENT ans = xpa_get(apt [, cmd]);
 
-     This function performs an XPA get command.  Argument `apt` is the XPA
-     access point to identify the destination server(s).  Argument `cmd` is an
-     optional textual command (a string or nil).
+     This function performs an XPA get command.  Argument `apt` is a string
+     identifying the XPA access point(s) of the destination server(s).
+     Argument `cmd` is an optional textual command (a string or nil).
 
      Keyword `nmax` may be used to specify the maximum number of recipients.
      By default, `nmax=1`.  Specifying `nmax=-1` will use the maximum possible
@@ -41,14 +41,14 @@ extern xpa_get;
        ans(i,4)   yields the data of the `i`-th reply as a string.
 
      If index `i` is less or equal zero, Yorick indexing rules apply (`i=0`
-     refers to the last entry, etc.).
+     refers to the last reply, etc.).
 
      The returned object also have the following members:
 
-       ans.replies   yields the number of replies
-       ans.buffers   yields the number of data buffers in the replies
-       ans.errors    yields the number of errors in the replies
-       ans.messages  yields the number of messages in the replies
+       ans.replies   yields the number of replies;
+       ans.buffers   yields the number of data buffers in the replies;
+       ans.errors    yields the number of errors in the replies;
+       ans.messages  yields the number of messages in the replies.
 
    SEE ALSO xpa_set.
  */
@@ -56,10 +56,11 @@ extern xpa_get;
 extern xpa_set;
 /* DOCUMENT ans = xpa_set(apt [, cmd [, arr]]);
 
-     This function performs an XPA set command.  Argument `apt` is the XPA
-     access point to identify the destination server(s).  Argument `cmd` is an
-     optional textual command (a string or nil).  Argument `arr` is an optional
-     data to send to the recipients (a numerical array or nil).
+     This function performs an XPA set command.  Argument `apt` is a string
+     identifying the XPA access point(s) of the destination server(s).
+     Argument `cmd` is an optional textual command (a string or nil).  Argument
+     `arr` is an optional data to send to the recipients (a numerical array or
+     nil).
 
      The returned object collects the answers ot the recipients and has
      similar semantic as the object returned by `xpa_get`.
