@@ -1,12 +1,81 @@
-YorXPA
-======
+# YorXPA
 
 [Yorick](http://yorick.github.com/) plugin to the
 [XPA](https://github.com/ericmandel/xpa) messaging system.
 
 
-Installation
-------------
+## Usage
+
+Once installed (see intructions below), YorXPA provides routines to communicate
+with any XPA server.
+
+In a nutshell:
+
+```{.c}
+xpa_list
+```
+
+prints a list of the available XPA servers.  To retrieve information (and data)
+from an XPA server (or several servers), call:
+
+```{.c}
+ans = xpa_get(apt [, cmd]);
+```
+
+where `apt` is the XPA access point to identify the destination server(s) and
+`cmd` is an optional textual command (a string or nil).  The returned object
+collects the answers of the recipients and can be indexed as follows to
+retrieve the contents of the received answers:
+
+- `ans()` yields the number of replies;
+
+- `ans(i)` yields the message of `i`-th reply;
+
+- `ans(i,)` yields the data size of the `i`-th reply;
+
+- `ans(i,arr)` copies data from `i`-th reply into array `arr` (sizes must
+  match) and yields `arr`;
+
+- `ans(i,0)` yields `0` if there is no message for `i`-th reply, `1` if it is a
+  normal message, `2` if it is an error message;
+
+- `ans(i,1)` yields the message of the `i`-th reply;
+
+- `ans(i,2)` yields the server name of the `i`-th reply;
+
+- `ans(i,3)` yields the data of the `i`-th reply as an array of bytes (or nil
+  if there are no data);
+
+- `ans(i,4)` yields the data of the `i`-th reply as a string.
+
+If index `i` is less or equal zero, Yorick indexing rules apply (`i=0` refers
+to the last entry, etc.).  The returned object also have the following members:
+
+- `ans.replies` yields the number of replies;
+- `ans.buffers` yields the number of data buffers in the replies;
+- `ans.errors` yields the number of errors in the replies;
+- `ans.messages` yields the number of messages in the replies.
+
+Keyword `nmax` may be used to specify the maximum number of recipients.
+By default, `nmax=1`.  Specifying `nmax=-1` will use the maximum possible
+number of recipients.
+
+To send information (and data)
+to an XPA server (or several servers), call:
+
+```{.c}
+ans = xpa_set(apt [, cmd [, arr]]);
+```
+
+where `apt` is the XPA access point to identify the destination server(s),
+`cmd` is an optional textual command (a string or nil) and `arr` is an optional
+data to send to the recipients (a numerical array or nil).  The returned object
+collects the answers ot the recipients and has similar semantic as the object
+returned by `xpa_get` and keyword `nmax` can also be used to allow for more
+than one reply (the default).
+
+
+## Installation
 
 You must have installed the [XPA](https://github.com/ericmandel/xpa) library
 and its development files.  You may compile it from the sources available

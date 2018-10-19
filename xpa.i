@@ -34,7 +34,6 @@ extern xpa_get;
                   match) and yields `arr`;
        ans(i,0)   yields `0` if there is no message for `i`-th reply, `1` if
                   it is a normal message, `2` if it is an error message;
-
        ans(i,1)   yields the message of the `i`-th reply;
        ans(i,2)   yields the server name of the `i`-th reply;
        ans(i,3)   yields the data of the `i`-th reply as an array of bytes
