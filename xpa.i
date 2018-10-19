@@ -13,8 +13,8 @@
 
 if (is_func(plug_in)) plug_in, "yor_xpa";
 
-extern xpaget;
-/* DOCUMENT ans = xpaget(apt [, cmd]);
+extern xpa_get;
+/* DOCUMENT ans = xpa_get(apt [, cmd]);
 
      This function performs an XPA get command.  Argument `apt` is the XPA
      access point to identify the destination server(s).  Argument `cmd` is an
@@ -51,11 +51,11 @@ extern xpaget;
        ans.errors    yields the number of errors in the replies
        ans.messages  yields the number of messages in the replies
 
-   SEE ALSO xpaset.
+   SEE ALSO xpa_set.
  */
 
-extern xpaset;
-/* DOCUMENT ans = xpaset(apt [, cmd [, arr]]);
+extern xpa_set;
+/* DOCUMENT ans = xpa_set(apt [, cmd [, arr]]);
 
      This function performs an XPA set command.  Argument `apt` is the XPA
      access point to identify the destination server(s).  Argument `cmd` is an
@@ -63,28 +63,28 @@ extern xpaset;
      data to send to the recipients (a numerical array or nil).
 
      The returned object collects the answers ot the recipients and has
-     similar semantic as the object returned by xpaget.
+     similar semantic as the object returned by `xpa_get`.
 
      Keyword `nmax` may be used to specify the maximum number of recipients.
      By default, `nmax=1`.  Specifying `nmax=-1` will use the maximum possible
      number of recipients.
 
 
-   SEE ALSO xpaget, xpalist.
+   SEE ALSO xpa_get, xpa_list.
  */
 
-func xpalist(nil)
-/* DOCUMENT lst = xpalist();
-         or xpalist;
+func xpa_list(nil)
+/* DOCUMENT lst = xpa_list();
+         or xpa_list;
 
      This function retrieves a list of the current XPA servers.  If called as a
      function, a list of strings (or nil if there are no servers) is returned;
      otherwise the list of servers is printed.
 
-   SEE ALSO xpaget.
+   SEE ALSO xpa_get.
  */
 {
-    ans = xpaget("xpans");
+    ans = xpa_get("xpans");
     n = ans.replies;
     if (ans.errors > 0) {
         for (i = 1; i <= n; ++i) {

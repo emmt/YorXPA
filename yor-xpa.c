@@ -433,7 +433,7 @@ static void push_xpadata()
     replies = 0;
 }
 
-void Y_xpaget(int argc)
+void Y_xpa_get(int argc)
 {
     char* apt = NULL;
     char* cmd = NULL;
@@ -500,7 +500,7 @@ void Y_xpaget(int argc)
     push_xpadata();
 }
 
-void Y_xpaset(int argc)
+void Y_xpa_set(int argc)
 {
     char* apt = NULL;
     char* cmd = NULL;
