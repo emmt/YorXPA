@@ -160,21 +160,36 @@ func xpa_array(ans, i, type, ..)
     return ans((is_void(i) ? 1 : i), array(type, dims));
 }
 
-func xpa_get_text(apt, cmd, chomp=, multi=)
-/* DOCUMENT txt = xpa_get_text(apt, cmd);
+local xpa_text, xpa_get_text, _xpa_text;
+/* DOCUMENT txt = xpa_text(ans);
+         or txt = xpa_get_text(apt, cmd);
 
-     sends an XPA get request for access point `apt` and command `cmd` and
-     yields the data resulting from this request in a textual form.  If
-     the answer has some error message, an error is thrown.
+     The function `xpa_text` converts the data of the XPA answer `ans` into a
+     textual form.  If the answer has some error message, an error is thrown.
+
+     The function `xpa_get_text` sends an XPA get request for access point
+     `apt` and command `cmd` and yields the data resulting from this request in
+     a textual form.  If the answer has some error message, an error is thrown.
 
      Keyword `chomp` may be set true to discard a single trailing newline if
      any.  If keyword `multi` is set true, multiple lines are returned in the
      form of an array of strings.
 
-   SEE ALSO: xpa_get.
+   SEE ALSO: xpa_get, xpa_check.
  */
+func xpa_text(ans, chomp=, multi=)
 {
-    ans = xpa_get(apt, cmd);
+    return _xpa_text(ans);
+}
+
+func xpa_get_text(apt, cmd, chomp=, multi=)
+{
+    return _xpa_text(xpa_get(apt, cmd));
+}
+
+func _xpa_text(ans)
+{
+    extern chomp, multi;
     xpa_check, ans;
     if (multi) {
         buf = ans(1,3);
@@ -193,6 +208,8 @@ func xpa_get_text(apt, cmd, chomp=, multi=)
         return ans(1,4);
     }
 }
+
+
 
 func xpa_check(ans, onlyfirst=)
 /* DOCUMENT xpa_check, ans;
