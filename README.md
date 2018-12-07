@@ -22,7 +22,7 @@ from an XPA server (or several servers), call:
 ans = xpa_get(apt [, cmd]);
 ```
 
-where `apt` is a string to identify the XPA access point(s) of the destination
+where `apt` is a string identifying the XPA access point(s) of the destination
 server(s) and `cmd` is an optional textual command (a string or nil).  The
 returned object collects the answers of the recipients and can be indexed as
 follows to retrieve the contents of the received answers:
