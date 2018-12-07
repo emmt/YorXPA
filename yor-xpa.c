@@ -27,9 +27,10 @@
 #define IS_NUMBER(id)  (Y_CHAR <= (id) && (id) <= Y_COMPLEX)
 #define IS_VOID(id)    ((id) == Y_VOID)
 #define IS_STRING(id)  ((id) == Y_STRING)
+
 #define IS_SCALAR_STRING(iarg) (yarg_string(iarg) == 1)
 
-#define IS_ERROR(str)  (strncmp(str, "XPA$ERROR", 9) == 0)
+#define IS_ERROR(str)   (strncmp(str, "XPA$ERROR",    9) == 0)
 #define IS_MESSAGE(str) (strncmp(str, "XPA$MESSAGE", 11) == 0)
 
 #define ROUND_UP(a, b)  ((((a) + ((b) - 1))/(b))*(b))
@@ -287,9 +288,9 @@ eval_xpadata(void* addr, int argc)
         }
         if (k == 3) {
             /* Push data as an array of bytes. */
-            size_t len = obj->lens[i];
             char* buf = obj->bufs[i];
-            if (len > 0) {
+            if (obj->bufs[i] != NULL) {
+                size_t len = obj->lens[i];
                 dims[0] = 1;
                 dims[1] = len;
                 memcpy(ypush_c(dims), buf, len);
@@ -364,20 +365,18 @@ static void clear_static_arrays()
     }
     while (replies > 0) {
         int i = replies - 1;
-        char* buf = bufs[i];
-        char* srv = srvs[i];
-        char* msg = msgs[i];
-        bufs[i] = NULL;
-        msgs[i] = NULL;
-        srvs[i] = NULL;
-        if (buf != NULL) {
-            free(buf);
+        char* ptr;
+        if ((ptr = bufs[i]) != NULL) {
+            bufs[i] = NULL;
+            free(ptr);
         }
-        if (srv != NULL) {
-            free(srv);
+        if ((ptr = srvs[i]) != NULL) {
+            bufs[i] = NULL;
+            free(ptr);
         }
-        if (msg != NULL) {
-            free(msg);
+        if ((ptr = msgs[i]) != NULL) {
+            bufs[i] = NULL;
+            free(ptr);
         }
         replies = i;
     }
@@ -389,10 +388,10 @@ static void clear_static_arrays()
 static void push_xpadata()
 {
     xpadata_t* obj;
-    size_t size, offset, step;
+    size_t size, offset, stride;
     int i;
 
-    /* Reduce the risk of being inrerrupted. */
+    /* Reduce the risk of being interrupted. */
     if (p_signalling) {
         p_abort();
     }
@@ -402,8 +401,8 @@ static void push_xpadata()
         replies = 0;
     }
     offset = ROUND_UP(sizeof(xpadata_t), sizeof(void*));
-    step = replies*sizeof(void*);
-    size = offset + 4*step;
+    stride = replies*sizeof(void*);
+    size = offset + 4*stride;
 
     /* Push a new object and instanciate it.  Note that memory returned by
        ypush_obj has been zero-filled. */
@@ -413,15 +412,13 @@ static void push_xpadata()
     obj->messages = -1;
     obj->errors = -1;
     obj->lens = (size_t*)((char*)obj + offset);
-    offset += step;
-    obj->bufs = (char**)((char*)obj + offset);
-    offset += step;
-    obj->srvs = (char**)((char*)obj + offset);
-    offset += step;
-    obj->msgs = (char**)((char*)obj + offset);
+    obj->bufs = (char**)((char*)obj + offset + stride);
+    obj->srvs = (char**)((char*)obj + offset + 2*stride);
+    obj->msgs = (char**)((char*)obj + offset + 3*stride);
     for (i = 0; i < replies; ++i) {
-        /* Copy contents, taking care of interrupts. */
-        obj->lens[i] = lens[i];
+        /* Copy contents, taking care of interrupts.  Note that buffer lengths
+           only have a valid value for non-NULL buffers. */
+        obj->lens[i] = (bufs[i] == NULL ? 0 : lens[i]);
         obj->bufs[i] = bufs[i];
         obj->srvs[i] = srvs[i];
         obj->msgs[i] = msgs[i];
