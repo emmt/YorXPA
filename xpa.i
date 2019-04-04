@@ -98,7 +98,7 @@ func xpa_list(nil)
     if (ans.buffers > 0) {
         for (i = 1; i <= n; ++i) {
             buf = ans(i,3);
-            if (! is_void(buf)) {
+            if (! is_void(buf) && numberof(buf) > 0) {
                 j = where(buf == '\n');
                 if (is_array(j)) {
                     buf(j) = '\0';
