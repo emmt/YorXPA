@@ -288,9 +288,9 @@ eval_xpadata(void* addr, int argc)
         }
         if (k == 3) {
             /* Push data as an array of bytes. */
+            size_t len = obj->lens[i];
             char* buf = obj->bufs[i];
-            if (obj->bufs[i] != NULL) {
-                size_t len = obj->lens[i];
+            if (len > 0) {
                 dims[0] = 1;
                 dims[1] = len;
                 memcpy(ypush_c(dims), buf, len);
@@ -303,11 +303,15 @@ eval_xpadata(void* addr, int argc)
             /* Push data as a string. */
             size_t len = obj->lens[i];
             char* buf = obj->bufs[i];
-            push_string(buf, len);
+            if (len > 0) {
+                push_string(buf, len);
+            } else {
+                push_string(NULL, 0);
+            }
             return;
         }
     }
-    if (rank > 0  && IS_NUMBER(typeid)) {
+    if (rank > 0 && IS_NUMBER(typeid)) {
         size_t len = obj->lens[i];
         char* buf = obj->bufs[i];
         long ntot;
@@ -323,10 +327,12 @@ eval_xpadata(void* addr, int argc)
         case Y_COMPLEX: size = 2*ntot*sizeof(double); break;
         default: size = 0; y_error("invalid array type");
         }
-        if (len != size) {
+        if (size != len) {
             y_error("invalid array size");
         }
-        memcpy(arr, buf, len);
+        if (size > 0) {
+            memcpy(arr, buf, size);
+        }
         return;
     }
     y_error("invalid key value");
