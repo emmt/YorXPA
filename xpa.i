@@ -209,8 +209,6 @@ func _xpa_text(ans)
     }
 }
 
-
-
 func xpa_check(ans, onlyfirst=)
 /* DOCUMENT xpa_check, ans;
          or msg = xpa_check(ans);

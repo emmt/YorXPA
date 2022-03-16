@@ -44,7 +44,7 @@ PKG_I_START=${srcdir}/xpa-start.i
 PKG_I_EXTRA=
 
 RELEASE_FILES = LICENSE.md Makefile NEWS.md README.md TODO.md \
-	configure xpa.i yor-xpa.c
+	configure xpa.i xpa-start.i yor-xpa.c
 RELEASE_NAME = $(PKG_NAME)-$(RELEASE_VERSION).tar.bz2
 
 # -------------------------------- standard targets and rules (in Makepkg)
