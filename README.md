@@ -1,6 +1,6 @@
 # YorXPA
 
-[Yorick](http://yorick.github.com/) plugin to the
+[Yorick](http://github.com/LLNL/yorick/) plugin to the
 [XPA](https://github.com/ericmandel/xpa) messaging system.
 
 
